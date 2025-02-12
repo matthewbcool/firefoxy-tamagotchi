@@ -1,0 +1,35 @@
+{
+  "manifest_version": 2,
+  "name": "Firefoxy Tamagotchi",
+  "version": "0.1",
+  "description": "A Firefox add-on leveraging React XR and the Firefox ML API",
+  "optional_permissions": ["trialML"],
+  "permissions": ["menus", "activeTab", "scripting", "storage"],
+  "icons": {
+    "64": "icon.png"
+  },
+  "browser_action": {
+    "default_title": "Firefoxy Tamagotchi",
+    "default_icon": {
+      "64": "icon.png"
+    }
+  },
+  "background": {
+    "scripts": ["dist/background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["injectUI.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    "dist/app.bundle.js",
+    "dist/vendors.bundle.js",
+    "dist/pets/Glub.gltf",
+    "dist*"
+  ],
+  "options_ui": {
+    "page": "settings.html"
+  }
+}
