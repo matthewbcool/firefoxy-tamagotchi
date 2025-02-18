@@ -4,7 +4,7 @@
   "version": "0.1",
   "description": "A Firefox add-on leveraging React XR and the Firefox ML API",
   "optional_permissions": ["trialML"],
-  "permissions": ["menus", "activeTab", "scripting", "storage"],
+  "permissions": ["menus", "activeTab"],
   "icons": {
     "64": "icon.png"
   },
