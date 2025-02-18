@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["injectUI.js"]
+      "js": ["dist/injectUI.js"]
     }
   ],
   "web_accessible_resources": [

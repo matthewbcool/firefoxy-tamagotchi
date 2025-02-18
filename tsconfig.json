@@ -10,6 +10,6 @@
     "outDir": "public",
     "rootDir": "./src"
   },
-  "include": ["src", "globals.d.ts", "src/types/**/*.d.ts"],
+  "include": ["src", "globals.d.ts", "src/types/**/*.d.ts", "src/injectUI.ts"],
   "exclude": ["node_modules", "public/dist"]
 }

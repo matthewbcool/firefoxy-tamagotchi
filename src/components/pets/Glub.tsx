@@ -1,5 +1,5 @@
 // @ts-nocheck
-// filepath: /Users/mattcool/Projects/Firefoxy Tamagotchi/Firefoxy-Tamagotchi/src/components/pets/Glub.tsx
+// src/components/pets/Glub.tsx
 import * as THREE from 'three';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { GLTF } from 'three-stdlib';
@@ -10,46 +10,63 @@ import React, {
   useImperativeHandle,
 } from 'react';
 import useAddonStore from '../../store/addonStore';
+import { usePetStore } from '../../store/petStore';
 
-// If you want typing for nodes/materials, you can define them as well:
 type GLTFResult = GLTF & {
-  nodes: {
-    Glub: THREE.SkinnedMesh;
-    Root: THREE.Bone;
-  };
-  materials: {
-    Atlas: THREE.MeshStandardMaterial;
-  };
+  nodes: { Glub: THREE.SkinnedMesh; Root: THREE.Bone };
+  materials: { Atlas: THREE.MeshStandardMaterial };
 };
 
 type GlubProps = JSX.IntrinsicElements['group'];
 
-// Forward the ref from the parent:
 export const Glub = forwardRef<THREE.Group, GlubProps>((props, ref) => {
-  // We keep a local ref for using inside this component and for useAnimations
   const groupRef = useRef<THREE.Group>(null);
+  const gltfUrl = useAddonStore((state) => {
+    console.log('addonStore state:', state);
+    return state.gltfUrl;
+  });
+  const { isFeeding } = usePetStore();
 
-  // Retrieve gltfUrl from Zustand store
-  const gltfUrl = useAddonStore((state) => state.gltfUrl);
-
-  // Only load the asset if the gltfUrl is set
+  console.log('Glub component rendering with gltfUrl:', gltfUrl);
   if (!gltfUrl) {
+    console.error('No GLTF URL provided in addonStore');
     return null;
   }
 
-  console.log('Loading GLTF from URL:', gltfUrl);
-  const { nodes, materials, animations } = useGLTF(gltfUrl) as GLTFResult;
+  let gltfData: GLTFResult;
+  try {
+    gltfData = useGLTF(gltfUrl) as GLTFResult;
+    console.log('GLTF loaded successfully:', gltfUrl);
+  } catch (error) {
+    console.error('Failed to load GLTF:', gltfUrl, error);
+    return null;
+  }
+
+  const { nodes, materials, animations } = gltfData;
   const { actions } = useAnimations(animations, groupRef);
 
-  // Play "Flying_Idle" on mount
   useEffect(() => {
-    if (actions?.Flying_Idle) {
-      actions.Flying_Idle.reset().play();
-    }
-  }, [actions]);
+    const idleAction = actions?.Flying_Idle;
+    const headbuttAction = actions?.Headbutt;
 
-  // Expose the local groupRef to the parent’s ref
-  useImperativeHandle(ref, () => groupRef.current!, []);
+    if (isFeeding && headbuttAction) {
+      if (idleAction) idleAction.stop();
+      headbuttAction.reset().play();
+      setTimeout(() => {
+        headbuttAction.stop();
+        if (idleAction) idleAction.reset().play();
+      }, 1000);
+    } else if (idleAction && !isFeeding) {
+      idleAction.reset().play();
+    }
+
+    return () => {
+      if (idleAction) idleAction.stop();
+      if (headbuttAction) headbuttAction.stop();
+    };
+  }, [isFeeding, actions]);
+
+  useImperativeHandle(ref, () => groupRef.current!);
 
   return (
     <group ref={groupRef} {...props} dispose={null}>
@@ -68,4 +85,5 @@ export const Glub = forwardRef<THREE.Group, GlubProps>((props, ref) => {
   );
 });
 
+// Preload can use the store's default, but it’s optional
 useGLTF.preload('/pets/Glub.gltf');

@@ -8,25 +8,20 @@ const App: React.FC = () => {
   const setGltfUrl = useAddonStore((state) => state.setGltfUrl);
 
   useEffect(() => {
-    // Update Zustand store with the global glTF base URL if available
-    if (window.ADDON_CONFIG && window.ADDON_CONFIG.gltfUrlBase) {
-      const computedUrl = window.ADDON_CONFIG.gltfUrlBase + 'pets/Glub.gltf';
-      setGltfUrl(computedUrl);
-      console.log('Updated Zustand store gltfUrl:', computedUrl);
+    console.log('App mounted, checking ADDON_CONFIG:', window.ADDON_CONFIG);
+    if (window.ADDON_CONFIG?.gltfUrl) {
+      console.log('Using ADDON_CONFIG.gltfUrl:', window.ADDON_CONFIG.gltfUrl);
+      setGltfUrl(window.ADDON_CONFIG.gltfUrl);
+    } else {
+      console.error('ADDON_CONFIG.gltfUrl not set, using fallback');
+      setGltfUrl('/pets/Glub.gltf');
     }
 
-    // Initialize the AI engine
     const aiEngine = new AIEngine();
     aiEngine.initialize().catch(console.error);
   }, [setGltfUrl]);
 
-  return (
-    <>
-      <XRScene store={{} as any}>
-        {/* XRScene will render its own children including Glub */}
-      </XRScene>
-    </>
-  );
+  return <XRScene />;
 };
 
 export default App;

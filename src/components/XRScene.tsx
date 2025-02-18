@@ -12,12 +12,18 @@ export const store = createXRStore();
 
 function GlubPet() {
   const glubRef = useRef<THREE.Group>(null);
-  const glubPosition = usePetStore((state) => state.glubPosition);
+  const { glubPosition, selectedElement, isFeeding } = usePetStore();
 
   useFrame((state, delta) => {
     if (glubRef.current) {
-      const target = new THREE.Vector3(...glubPosition);
-      glubRef.current.position.lerp(target, 0.1); // Adjust lerp factor as needed
+      const targetPos = new THREE.Vector3(...glubPosition);
+      glubRef.current.position.lerp(targetPos, 0.1);
+
+      if (isFeeding && selectedElement) {
+        // Approximate element position in 3D space (simplified)
+        const elementPos = new THREE.Vector3(5, 0, 0); // Adjust based on real position if available
+        glubRef.current.lookAt(elementPos);
+      }
     }
   });
 
@@ -25,24 +31,17 @@ function GlubPet() {
 }
 
 export function XRScene() {
-  // Toggle pointerEvents: 'none' by default, 'auto' when Shift is held
   const [canvasPointerEvents, setCanvasPointerEvents] = useState<
     'none' | 'auto'
   >('none');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setCanvasPointerEvents('auto');
-      }
+      if (e.key === 'Shift') setCanvasPointerEvents('auto');
     };
-
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setCanvasPointerEvents('none');
-      }
+      if (e.key === 'Shift') setCanvasPointerEvents('none');
     };
-
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     return () => {
@@ -66,7 +65,6 @@ export function XRScene() {
       <ambientLight intensity={0.5} />
       <Environment preset='sunset' />
       <XR store={store}>
-        {/* This component listens for Shift+click events */}
         <CanvasClickHandler />
         <GlubPet />
       </XR>
